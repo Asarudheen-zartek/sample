@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+from datetime import timedelta
+from decouple import config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,6 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_yasg',
+    'ckeditor',
+    "fcm_django",
 
     'accounts',
     'products',
@@ -132,11 +137,35 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/storage/media/'
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_QUERYSTRING_AUTH = False
+AWS_DEFAULT_ACL = 'public-read'
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+
+# AWS_PRIVATE_MEDIA_LOCATION = config('AWS_STORAGE_BUCKET_NAME')
+# AWS_PUBLIC_MEDIA_LOCATION  = config('AWS_STORAGE_BUCKET_NAME')
+# AWS_STATIC_LOCATION  = config('AWS_STORAGE_BUCKET_NAME')
+
+
+
+
 
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-
+## Rest framework Configurations
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -146,11 +175,47 @@ REST_FRAMEWORK = {
 }
 
 
-from datetime import timedelta
 
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 
+}
+
+
+##Firebase Pushnotiifcation Configuartions
+
+
+import json
+from firebase_admin import credentials,initialize_app
+
+
+
+# verifiy service account
+
+FIREBASE_SERVICE_ACCOUNT = config('FIREBASE_SERVICE_ACCOUNT')
+cert = json.loads(FIREBASE_SERVICE_ACCOUNT)
+firebase_cert = credentials.Certificate(cert=cert)
+
+
+
+FIREBASE_APP = initialize_app(firebase_cert)
+# To learn more, visit the docs here:
+# https://cloud.google.com/docs/authentication/getting-started>
+
+FCM_DJANGO_SETTINGS = {
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "[FCM Django]",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": True,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": True,
+    # Transform create of an existing Device (based on registration id) into
+                # an update. See the section
+    # "Update of device with duplicate registration ID" for more details.
+    "UPDATE_ON_DUPLICATE_REG_ID": False,
 }

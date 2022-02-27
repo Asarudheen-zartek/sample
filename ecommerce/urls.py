@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 from django.urls import re_path as url
@@ -24,6 +26,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 
 from products.api.views import ProducViewSet
 from rest_framework.routers import DefaultRouter
@@ -42,8 +45,7 @@ from accounts.api.views import ProfileAPIView,  LoginAPIView
 
 router = DefaultRouter()
 router.register(r'products', ProducViewSet, basename='products')
-# urlpatterns = router.urls
-
+router.register(r'devices', FCMDeviceAuthorizedViewSet)
 
 
 jwt_urls = [
@@ -85,3 +87,8 @@ urlpatterns = [
 
 
 
+
+
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
